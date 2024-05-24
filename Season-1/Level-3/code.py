@@ -27,29 +27,39 @@ class TaxPayer:
         if not path:
             pass
 
-        # defends against path traversal attacks
-        if path.startswith('/') or path.startswith('..'):
-            return None
-
         # builds path
         base_dir = os.path.dirname(os.path.abspath(__file__))
         prof_picture_path = os.path.normpath(os.path.join(base_dir, path))
 
-        with open(prof_picture_path, 'rb') as pic:
-            picture = bytearray(pic.read())
+        # defends against path traversal attacks
+        if not prof_picture_path.startswith(base_dir):
+            return None
+
+        try:
+            with open(prof_picture_path, 'rb') as pic:
+                picture = bytearray(pic.read())
+        except FileNotFoundError:
+            return None
 
         # assume that image is returned on screen after this
         return prof_picture_path
 
     # returns the path of an attached tax form that every user should submit
     def get_tax_form_attachment(self, path=None):
-        tax_data = None
-
         if not path:
             raise Exception("Error: Tax form is required for all users")
 
-        with open(path, 'rb') as form:
-            tax_data = bytearray(form.read())
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        tax_form_path = os.path.normpath(os.path.join(base_dir, path))
+
+        if not tax_form_path.startswith(base_dir):
+            return None
+
+        try:
+            with open(tax_form_path, 'rb') as form:
+                tax_data = bytearray(form.read())
+        except FileNotFoundError:
+            return None
 
         # assume that tax data is returned on screen after this
-        return path
+        return tax_form_path
